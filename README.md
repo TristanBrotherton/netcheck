@@ -7,3 +7,4 @@ Once it reconnects it will log the reconnected internet speed and continue monit
     git clone https://github.com/TristanBrotherton/netcheck.git
     cd netcheck
     chmod +x netcheck.sh
+    ./netcheck.sh
