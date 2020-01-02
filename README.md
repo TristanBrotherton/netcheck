@@ -4,8 +4,6 @@ and if its interupted, writes a log containing the time of disconnect, and lengt
 Once it reconnects it will log the reconnected internet speed and continue monitoring again.
 # Installation 
 
-::
-
     git clone https://github.com/TristanBrotherton/netcheck.git
     cd netcheck
     chmod +x netcheck.sh
