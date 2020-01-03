@@ -73,8 +73,8 @@ PRINT_RECONNECTED() {
 }
 
 PRINT_DURATION() {
-  echo "$STRING_3 $(($VAR_DURATION / 60)) minutes and $(($VAR_DURATION % 60)) seconds." >> $VAR_LOGFILE
-  echo "$STRING_4" >> $VAR_LOGFILE
+  echo "$STRING_3 $(($VAR_DURATION / 60)) minutes and $(($VAR_DURATION % 60)) seconds." | tee -a $VAR_LOGFILE
+  echo "$STRING_4" | tee -a $VAR_LOGFILE
 }
 PRINT_LOGGING_TERMINATED() {
   echo
