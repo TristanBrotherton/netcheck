@@ -11,6 +11,7 @@ VAR_CONNECTED=true
 VAR_LOGFILE=connection.log
 VAR_SPEEDTEST_DISABLED=false
 VAR_CHECK_TIME=5
+VAR_HOST=http://www.google.com
 
 COLOR_RED="\033[31m"
 COLOR_GREEN="\033[32m"
@@ -36,6 +37,7 @@ PRINT_HELP() {
   echo "$VAR_SCRIPTNAME -f path/my_log_file.log          Specify log file and path to use"
   echo "$VAR_SCRIPTNAME -s                                 Disable speedtest on reconnect"
   echo "$VAR_SCRIPTNAME -c                Check connection ever (n) seconds. Default is 5"
+  echo "$VAR_SCRIPTNAME -u            URL/Host to check, default is http://www.google.com"
   echo
 }
 
@@ -44,6 +46,7 @@ PRINT_INSTALL() {
   echo
   echo "Installing this library will allow tests of network connection speed."
   echo "https://github.com/sivel/speedtest-cli"
+  echo "Installation is a single python file, saved in this directory."
   echo
   echo "Install in this directory now? (y/n)"
 }
@@ -117,7 +120,7 @@ RUN_SPEEDTEST() {
 NET_CHECK() {
   while true; do
     # Check for network connection
-    wget -q --tries=5 --timeout=20 -O - http://www.google.com > /dev/null
+    wget -q --tries=5 --timeout=20 -O - $VAR_HOST > /dev/null
     if [[ $? -eq 0 ]]; then :
       # We are currently online
       # Did we just reconnect?
@@ -156,7 +159,7 @@ CLEANUP() {
 }
 
 trap CLEANUP EXIT
-while getopts "fc:help-s" opt; do
+while getopts "fcu:help-s" opt; do
   case $opt in
     f)
       echo "Logging to custom file: $OPTARG"
@@ -165,6 +168,10 @@ while getopts "fc:help-s" opt; do
     c)
       echo "Checking connection every: $OPTARG seconds"
       VAR_CHECK_TIME=$OPTARG
+      ;;
+    u)
+      echo "Checking host: $OPTARG"
+      VAR_HOST=$OPTARG
       ;;
     s)
       VAR_SPEEDTEST_DISABLED=true
