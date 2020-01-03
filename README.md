@@ -8,3 +8,5 @@ Once it reconnects it will log the reconnected internet speed and continue monit
     cd netcheck
     chmod +x netcheck.sh
     ./netcheck.sh
+
+![Test Image 1](netcheck.png)
