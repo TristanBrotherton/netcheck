@@ -1,18 +1,25 @@
 #!/bin/bash
-SCRIPTNAME=`basename "$0"`
-CONNECTED=true
-LOGFILE=connection.log
-SPTST_DISABLED=false
 
-#COLORS
-CL_RED="\033[31m"
-CL_GREEN="\033[32m"
-CL_RESET="\033[0m"
+################################################################################
+##               Netcheck - Simple internet connection logging                ##
+##               https://github.com/TristanBrotherton/netcheck                ##
+##                                       -- Tristan Brotherton                ##
+################################################################################
 
-S1="LINK RECONNECTED:                               "
-S2="LINK DOWN:                                      "
-S3="TOTAL DOWNTIME:                                 "
-S4="RECONNECTED LINK SPEED:                         "
+VAR_SCRIPTNAME=`basename "$0"`
+VAR_CONNECTED=true
+VAR_LOGFILE=connection.log
+VAR_SPEEDTEST_DISABLED=false
+VAR_CHECK_TIME=5
+
+COLOR_RED="\033[31m"
+COLOR_GREEN="\033[32m"
+COLOR_RESET="\033[0m"
+
+STRING_1="LINK RECONNECTED:                               "
+STRING_2="LINK DOWN:                                      "
+STRING_3="TOTAL DOWNTIME:                                 "
+STRING_4="RECONNECTED LINK SPEED:                         "
 
 PRINT_NL() {
   echo
@@ -25,9 +32,10 @@ PRINT_HR() {
 PRINT_HELP() {
   echo "Here are your options:"
   echo
-  echo "$SCRIPTNAME -h                                           Display this message"
-  echo "$SCRIPTNAME -f path/my_log_file.log          Specify log file and path to use"
-  echo "$SCRIPTNAME -s                                 Disable speedtest on reconnect"
+  echo "$VAR_SCRIPTNAME -h                                           Display this message"
+  echo "$VAR_SCRIPTNAME -f path/my_log_file.log          Specify log file and path to use"
+  echo "$VAR_SCRIPTNAME -s                                 Disable speedtest on reconnect"
+  echo "$VAR_SCRIPTNAME -c                Check connection ever (n) seconds. Default is 5"
   echo
 }
 
@@ -46,50 +54,45 @@ PRINT_INSTALLING() {
 }
 
 PRINT_LOGDEST() {
-  echo "Logging to:        $LOGFILE"
+  echo "Logging to:        $VAR_LOGFILE"
 }
 
 PRINT_LOGSTART() {
-  echo "************ Monitoring started at: $(date) ************" >> $LOGFILE
-  echo -e "************$CL_GREEN Monitoring started at: $(date) $CL_RESET************"
+  echo "************ Monitoring started at: $(date) ************" >> $VAR_LOGFILE
+  echo -e "************$COLOR_GREEN Monitoring started at: $(date) $COLOR_RESET************"
 }
 
-LOAD_OPTIONS() {
-  while getopts ":f:s:help-" opt; do
-    case $opt in
-      f)
-        echo "Logging to custom file: $OPTARG"
-        LOGFILE=$OPTARG
-        ;;
-      s)
-        SPTST_DISABLED=true
-        ;;
-      h)
-        PRINT_HELP
-        exit 1
-        ;;
-      \?)
-        echo "Invalid option: -$OPTARG"
-        exit 1
-        ;;
-      :)
-        echo "Option -$OPTARG requires an argument."
-        exit 1
-        ;;
-    esac
-  done
-  PR_HR
+PRINT_DISCONNECTED() {
+  echo "$STRING_2 $(date)" >> $VAR_LOGFILE
+  echo -e $COLOR_RED"$STRING_2 $(date)"$COLOR_RESET
+}
+
+PRINT_RECONNECTED() {
+  echo "$STRING_1 $(date)" >> $VAR_LOGFILE
+  echo -e $COLOR_GREEN"$STRING_1 $(date)"$COLOR_RESET
+}
+
+PRINT_DURATION() {
+  echo "$STRING_3 $(($VAR_DURATION / 60)) minutes and $(($VAR_DURATION % 60)) seconds." >> $VAR_LOGFILE
+  echo "$STRING_4" >> $VAR_LOGFILE
+}
+PRINT_LOGGING_TERMINATED() {
+  echo
+  echo "************ Monitoring ended at:   $(date) ************" >> $VAR_LOGFILE
+  echo -e "************$COLOR_RED Monitoring ended at:   $(date) $COLOR_RESET************"
 }
 
 CHECK_FOR_SPEEDTEST() {
-  if [[ $SPTST_DISABLED = false ]]; then :
+  if [[ $VAR_SPEEDTEST_DISABLED = false ]]; then :
     if [ -f "speedtest-cli" ]; then
-        echo -e "SpeedTest-CLI:    $CL_GREEN Installed $CL_RESET"
-        SPTST_READY=true
+        echo -e "SpeedTest-CLI:    $COLOR_GREEN Installed $COLOR_RESET"
+        VAR_SPEEDTEST_READY=true
     else
-        echo -e "SpeedTest-CLI:    $CL_RED Not Installed $CL_RESET"
+        echo -e "SpeedTest-CLI:    $COLOR_RED Not Installed $COLOR_RESET"
         INSTALL_SPEEDTEST
     fi
+  else
+      echo -e "SpeedTest-CLI:    $COLOR_RED Disabled $COLOR_RESET"
   fi
 }
 
@@ -103,50 +106,85 @@ INSTALL_SPEEDTEST() {
     PRINT_NL
     CHECK_FOR_SPEEDTEST
   else
-    SPTST_DISABLED=true
+    VAR_SPEEDTEST_DISABLED=true
   fi
+}
+
+RUN_SPEEDTEST() {
+  ./speedtest-cli --simple | sed 's/^/                                                 /' | tee -a $VAR_LOGFILE
 }
 
 NET_CHECK() {
   while true; do
-    # Set default connection state
+    # Check for network connection
     wget -q --tries=5 --timeout=20 -O - http://www.google.com > /dev/null
     if [[ $? -eq 0 ]]; then :
-      # Online
-      if [[ $CONNECTED = false ]]; then :
-        # We just reconnected
-        echo -e $CL_GREEN"$S1 $(date)"$CL_RESET
-        echo "$S1 $(date)" | tee -a $LOGFILE
-        duration=$SECONDS
-        echo "$S3 $(($duration / 60)) minutes and $(($duration % 60)) seconds." | tee -a $LOGFILE
-        echo "$S4" | tee -a $LOGFILE
-        if [[ $SPTST_READY = true ]]; then :
-          ./speedtest-cli --simple | sed 's/^/                                                 /' | tee -a $LOGFILE
+      # We are currently online
+      # Did we just reconnect?
+      if [[ $VAR_CONNECTED = false ]]; then :
+        PRINT_RECONNECTED
+        VAR_DURATION=$SECONDS
+        PRINT_DURATION
+        if [[ $VAR_SPEEDTEST_READY = true ]]; then :
+          RUN_SPEEDTEST
         fi
-        PRINT_HR | tee -a $LOGFILE
+        PRINT_HR | tee -a $VAR_LOGFILE
         SECONDS=0
-        CONNECTED=true
-
+        VAR_CONNECTED=true
       fi
-    else # We are offline
-      if [[ $CONNECTED = false ]]; then :
+
+    else
+      # We are offline
+      if [[ $VAR_CONNECTED = false ]]; then :
           # We were already disconnected
         else
           # We just disconnected
-          echo -e $CL_RED"$S2 $(date)"$CL_RESET
-          echo "$S2 $(date)" | tee -a $LOGFILE
+          PRINT_DISCONNECTED
           SECONDS=0
-          CONNECTED=false
+          VAR_CONNECTED=false
       fi
     fi
 
-    sleep 5
+    sleep $VAR_CHECK_TIME
 
   done
-  echo "*********** Monitoring MB ended at  " $(date) "***********"
+
 }
 
-LOAD_OPTIONS
+CLEANUP() {
+  PRINT_LOGGING_TERMINATED
+}
+
+trap CLEANUP EXIT
+while getopts "fc:help-s" opt; do
+  case $opt in
+    f)
+      echo "Logging to custom file: $OPTARG"
+      VAR_LOGFILE=$OPTARG
+      ;;
+    c)
+      echo "Checking connection every: $OPTARG seconds"
+      VAR_CHECK_TIME=$OPTARG
+      ;;
+    s)
+      VAR_SPEEDTEST_DISABLED=true
+      ;;
+    h)
+      PRINT_HELP
+      exit 1
+      ;;
+    \?)
+      echo "Invalid option: -$OPTARG"
+      exit 1
+      ;;
+    :)
+      echo "Option -$OPTARG requires an argument."
+      exit 1
+      ;;
+  esac
+done
+
+PRINT_HR
 CHECK_FOR_SPEEDTEST
 PRINT_LOGDEST
 PRINT_LOGSTART
