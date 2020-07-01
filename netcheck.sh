@@ -7,6 +7,7 @@
 ################################################################################
 
 VAR_SCRIPTNAME=`basename "$0"`
+VAR_SCRIPTLOC="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 VAR_CONNECTED=true
 VAR_LOGFILE=connection.log
 VAR_SPEEDTEST_DISABLED=false
@@ -46,7 +47,8 @@ PRINT_INSTALL() {
   echo
   echo "Installing this library will allow tests of network connection speed."
   echo "https://github.com/sivel/speedtest-cli"
-  echo "Installation is a single python file, saved in this directory."
+  echo "Installation is a single python file, saved in:"
+  echo "$VAR_SCRIPTLOC"
   echo
   echo "Install in this directory now? (y/n)"
 }
@@ -61,18 +63,18 @@ PRINT_LOGDEST() {
 }
 
 PRINT_LOGSTART() {
-  echo "************ Monitoring started at: $(date) ************" >> $VAR_LOGFILE
-  echo -e "************$COLOR_GREEN Monitoring started at: $(date) $COLOR_RESET************"
+  echo "************ Monitoring started at: $(date "+%a %d %b %Y %H:%M:%S %Z") ************" >> $VAR_LOGFILE
+  echo -e "************$COLOR_GREEN Monitoring started at: $(date "+%a %d %b %Y %H:%M:%S %Z") $COLOR_RESET************"
 }
 
 PRINT_DISCONNECTED() {
-  echo "$STRING_2 $(date)" >> $VAR_LOGFILE
+  echo "$STRING_2 $(date "+%a %d %b %Y %H:%M:%S %Z")" >> $VAR_LOGFILE
   echo -e $COLOR_RED"$STRING_2 $(date)"$COLOR_RESET
 }
 
 PRINT_RECONNECTED() {
-  echo "$STRING_1 $(date)" >> $VAR_LOGFILE
-  echo -e $COLOR_GREEN"$STRING_1 $(date)"$COLOR_RESET
+  echo "$STRING_1 $(date "+%a %d %b %Y %H:%M:%S %Z")" >> $VAR_LOGFILE
+  echo -e $COLOR_GREEN"$STRING_1 $(date "+%a %d %b %Y %H:%M:%S %Z")"$COLOR_RESET
 }
 
 PRINT_DURATION() {
@@ -81,13 +83,13 @@ PRINT_DURATION() {
 }
 PRINT_LOGGING_TERMINATED() {
   echo
-  echo "************ Monitoring ended at:   $(date) ************" >> $VAR_LOGFILE
-  echo -e "************$COLOR_RED Monitoring ended at:   $(date) $COLOR_RESET************"
+  echo "************ Monitoring ended at:   $(date "+%a %d %b %Y %H:%M:%S %Z") ************" >> $VAR_LOGFILE
+  echo -e "************$COLOR_RED Monitoring ended at:   $(date "+%a %d %b %Y %H:%M:%S %Z") $COLOR_RESET************"
 }
 
 CHECK_FOR_SPEEDTEST() {
   if [[ $VAR_SPEEDTEST_DISABLED = false ]]; then :
-    if [ -f "speedtest-cli" ]; then
+    if [ -f "$VAR_SCRIPTLOC/speedtest-cli.py" ]; then
         echo -e "SpeedTest-CLI:    $COLOR_GREEN Installed $COLOR_RESET"
         VAR_SPEEDTEST_READY=true
     else
@@ -104,8 +106,8 @@ INSTALL_SPEEDTEST() {
   read -r response
   if [[ $response =~ ^([yY][eE][sS]|[yY])$ ]]; then
     PRINT_INSTALLING
-    wget -q -O speedtest-cli https://raw.githubusercontent.com/sivel/speedtest-cli/master/speedtest.py
-    chmod +x speedtest-cli
+    wget -q -O "$VAR_SCRIPTLOC/speedtest-cli.py" https://raw.githubusercontent.com/sivel/speedtest-cli/master/speedtest.py
+    chmod +x "$VAR_SCRIPTLOC/speedtest-cli.py"
     PRINT_NL
     CHECK_FOR_SPEEDTEST
   else
@@ -114,7 +116,7 @@ INSTALL_SPEEDTEST() {
 }
 
 RUN_SPEEDTEST() {
-  ./speedtest-cli --simple | sed 's/^/                                                 /' | tee -a $VAR_LOGFILE
+  ./$VAR_SCRIPTLOC/speedtest-cli.py --simple | sed 's/^/                                                 /' | tee -a $VAR_LOGFILE
 }
 
 NET_CHECK() {
@@ -195,4 +197,7 @@ PRINT_HR
 CHECK_FOR_SPEEDTEST
 PRINT_LOGDEST
 PRINT_LOGSTART
+if [[ $VAR_SPEEDTEST_READY = true ]]; then :
+	RUN_SPEEDTEST
+fi
 NET_CHECK
