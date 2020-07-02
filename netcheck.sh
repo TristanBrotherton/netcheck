@@ -22,6 +22,7 @@ STRING_1="LINK RECONNECTED:                               "
 STRING_2="LINK DOWN:                                      "
 STRING_3="TOTAL DOWNTIME:                                 "
 STRING_4="RECONNECTED LINK SPEED:                         "
+STRING_5="CONNECTED LINK SPEED:                           "
 
 PRINT_NL() {
   echo
@@ -116,7 +117,7 @@ INSTALL_SPEEDTEST() {
 }
 
 RUN_SPEEDTEST() {
-  ./$VAR_SCRIPTLOC/speedtest-cli.py --simple | sed 's/^/                                                 /' | tee -a $VAR_LOGFILE
+  $VAR_SCRIPTLOC/speedtest-cli.py --simple | sed 's/^/                                                 /' | tee -a $VAR_LOGFILE
 }
 
 NET_CHECK() {
@@ -198,6 +199,8 @@ CHECK_FOR_SPEEDTEST
 PRINT_LOGDEST
 PRINT_LOGSTART
 if [[ $VAR_SPEEDTEST_READY = true ]]; then :
-	RUN_SPEEDTEST
+  echo "$STRING_5" | tee -a $VAR_LOGFILE
+  RUN_SPEEDTEST
+  PRINT_HR | tee -a $VAR_LOGFILE
 fi
 NET_CHECK
