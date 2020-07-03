@@ -2,8 +2,9 @@
 A shellscript to check and log when your internet connection goes down. Netcheck checks for internet connectivity
 and if its interupted, writes a log containing the time of disconnect, and length of time disconnected.
 Once it reconnects it will log the reconnected internet speed and continue monitoring again.
+
 Netcheck also include an optional web interface for viewing your connection logs remotely from a web browser.
-You can optionally use a service such as NGROK to allow you to see the web interface outside of your network.
+You can use a service such as NGROK to allow you to see the web interface outside of your network.
 
 ## Installation
 
