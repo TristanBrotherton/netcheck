@@ -9,7 +9,7 @@
 VAR_SCRIPTNAME=`basename "$0"`
 VAR_SCRIPTLOC="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 VAR_CONNECTED=true
-VAR_LOGFILE=connection.log
+VAR_LOGFILE=log/connection.log
 VAR_SPEEDTEST_DISABLED=false
 VAR_CHECK_TIME=5
 VAR_HOST=http://www.google.com
