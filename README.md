@@ -2,14 +2,21 @@
 A shellscript to check and log when your internet connection goes down. Netcheck checks for internet connectivity
 and if its interupted, writes a log containing the time of disconnect, and length of time disconnected.
 Once it reconnects it will log the reconnected internet speed and continue monitoring again.
+Netcheck also include an optional web interface for viewing your connection logs remotely from a web browser.
+You can optionally use a service such as NGROK to allow you to see the web interface outside of your network.
+
 ## Installation
 
     git clone https://github.com/TristanBrotherton/netcheck.git
     cd netcheck
     chmod +x netcheck.sh
     ./netcheck.sh
+    
+### CLI Interface
+![Netcheck CLI interface](netcheck.png)
 
-![Test Image 1](netcheck.png)
+### Web Interface
+![Netcheck CLI interface](netcheck_remote.png)
 
 ## Options
     netcheck.sh -h                                           Display this message
@@ -17,3 +24,6 @@ Once it reconnects it will log the reconnected internet speed and continue monit
     netcheck.sh -s                                 Disable speedtest on reconnect
     netcheck.sh -c                Check connection ever (n) seconds. Default is 5
     netcheck.sh -u            URL/Host to check, default is http://www.google.com
+    netcheck.sh -w                                  Enable the remote webinteface
+    netcheck.sh -p                  Specify an optional port for the webinterface
+     
