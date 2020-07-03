@@ -13,6 +13,9 @@ VAR_LOGFILE=connection.log
 VAR_SPEEDTEST_DISABLED=false
 VAR_CHECK_TIME=5
 VAR_HOST=http://www.google.com
+VAR_ENABLE_WEBINTERFACE=false
+VAR_WEB_PORT=9000
+VAR_CUSTOM_WEB_PORT=false
 
 COLOR_RED="\033[31m"
 COLOR_GREEN="\033[32m"
@@ -40,11 +43,12 @@ PRINT_HELP() {
   echo "$VAR_SCRIPTNAME -s                                 Disable speedtest on reconnect"
   echo "$VAR_SCRIPTNAME -c                Check connection ever (n) seconds. Default is 5"
   echo "$VAR_SCRIPTNAME -u            URL/Host to check, default is http://www.google.com"
+  echo "$VAR_SCRIPTNAME -w                                  Enable the remote webinteface"
+  echo "$VAR_SCRIPTNAME -p                  Specify an optional port for the webinterface"
   echo
 }
 
 PRINT_INSTALL() {
-  echo
   echo
   echo "Installing this library will allow tests of network connection speed."
   echo "https://github.com/sivel/speedtest-cli"
@@ -88,14 +92,46 @@ PRINT_LOGGING_TERMINATED() {
   echo -e "************$COLOR_RED Monitoring ended at:   $(date "+%a %d %b %Y %H:%M:%S %Z") $COLOR_RESET************"
 }
 
+GET_LOCAL_IP() {
+  ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p' | sed -e 's/^/                   http:\/\//' | sed -e "s/.*/&:$1/"
+  echo
+}
+
+START_WEBSERVER() {
+  (cd $VAR_SCRIPTLOC/log; python -m SimpleHTTPServer $1 &) &> /dev/null
+}
+
+SETUP_WEBSERVER() {
+  if [[ $VAR_ENABLE_WEBINTERFACE = true ]]; then :
+    if [[ $VAR_CUSTOOM_LOG = true ]]; then :
+      echo -e "Web Interface:    $COLOR_RED Not Available $COLOR_RESET"
+      echo -e "Custom log destinations are not supported by webinterface"
+    else
+      echo -e "Web Interface:    $COLOR_GREEN Enabled $COLOR_RESET"
+      if [[ $VAR_CUSTOM_WEB_PORT = false ]]; then :
+        echo -e "                   http://localhost:$VAR_WEB_PORT"
+        GET_LOCAL_IP $VAR_WEB_PORT
+        START_WEBSERVER $VAR_WEB_PORT
+      else
+        echo -e "                   http://localhost:$VAR_CUSTOM_WEB_PORT"
+        GET_LOCAL_IP $VAR_CUSTOM_WEB_PORT
+        START_WEBSERVER $VAR_CUSTOM_WEB_PORT
+      fi
+    fi
+  fi
+}
+
 CHECK_FOR_SPEEDTEST() {
   if [[ $VAR_SPEEDTEST_DISABLED = false ]]; then :
-    if [ -f "$VAR_SCRIPTLOC/speedtest-cli.py" ]; then
+    if [ -f "$VAR_SCRIPTLOC/speedtest-cli.py" ] || [ -f "$VAR_SCRIPTLOC/speedtest-cli" ]; then
         echo -e "SpeedTest-CLI:    $COLOR_GREEN Installed $COLOR_RESET"
         VAR_SPEEDTEST_READY=true
     else
         echo -e "SpeedTest-CLI:    $COLOR_RED Not Installed $COLOR_RESET"
         INSTALL_SPEEDTEST
+    fi
+    if [ -f "$VAR_SCRIPTLOC/speedtest-cli" ]; then
+      mv $VAR_SCRIPTLOC/speedtest-cli $VAR_SCRIPTLOC/speedtest-cli.py
     fi
   else
       echo -e "SpeedTest-CLI:    $COLOR_RED Disabled $COLOR_RESET"
@@ -159,14 +195,19 @@ NET_CHECK() {
 
 CLEANUP() {
   PRINT_LOGGING_TERMINATED
+  if [[ $VAR_ENABLE_WEBINTERFACE = true ]]; then :
+    echo "Shutting down webinterface..."
+    kill 0
+  fi
 }
 
 trap CLEANUP EXIT
-while getopts "fcu:help-s" opt; do
+while getopts "fcup:whelp-s" opt; do
   case $opt in
     f)
       echo "Logging to custom file: $OPTARG"
-      VAR_LOGFILE=$OPTARG
+      VAR_LOGFILE=$
+      VAR_CUSTOOM_LOG=true
       ;;
     c)
       echo "Checking connection every: $OPTARG seconds"
@@ -176,6 +217,13 @@ while getopts "fcu:help-s" opt; do
       echo "Checking host: $OPTARG"
       VAR_HOST=$OPTARG
       ;;
+    p)
+      echo "Port set to: $OPTARG"
+      VAR_CUSTOM_WEB_PORT=$OPTARG
+      ;;
+    w)
+      VAR_ENABLE_WEBINTERFACE=true
+      ;;
     s)
       VAR_SPEEDTEST_DISABLED=true
       ;;
@@ -184,7 +232,7 @@ while getopts "fcu:help-s" opt; do
       exit 1
       ;;
     \?)
-      echo "Invalid option: -$OPTARG"
+      echo "Invalid option: -$OPTARG (try -help for clues)"
       exit 1
       ;;
     :)
@@ -195,6 +243,7 @@ while getopts "fcu:help-s" opt; do
 done
 
 PRINT_HR
+SETUP_WEBSERVER
 CHECK_FOR_SPEEDTEST
 PRINT_LOGDEST
 PRINT_LOGSTART

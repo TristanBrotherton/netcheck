@@ -1,3 +1,5 @@
 /connection.log
 /.DS_Store
 /speedtest-cli
+/speedtest-cli.py
+/log/connection.log

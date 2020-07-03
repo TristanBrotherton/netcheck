@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8>
+<meta name=apple-mobile-web-app-capable content=yes>
+<title>Netcheck by Tristan Connection</title>
+<style>@import url("https://fonts.googleapis.com/css?family=Source+Code+Pro:400");html,body{width:100%;height:100%;overflow:hidden;background:#9664e1;font-family:'Source Code Pro',sans-serif;font-size:12px;margin:0;padding:0}*,*:before,*:after{box-sizing:border-box}.terminal,.terminal:before,.terminal:after,p:after{position:absolute}.terminal{height:80vh;width:80vw;margin:10vh 10vw;padding:26px 4px 4px;border-radius:5px;background:linear-gradient(#f6f6f6,#d3d3d3 20px,#7e7e7e 20px,#7e7e7e 21px,#393456 21px);box-shadow:0 0 0 1px rgba(0,0,0,0.25);-webkit-transition:all .5s ease;transition:all .5s ease}@supports(-webkit-touch-callout:none){body{overflow:hidden}.terminal{height:65vh}}.terminal:before{content:" ";width:10px;height:10px;margin:-20px 0 0 5px;border-radius:5px;background:#fc625d;box-shadow:0 0 0 1px #de413e,15px 0 #fec041,15px 0 0 1px #dda035,30px 0 #35cc4b,30px 0 0 1px #28aa36}.terminal:after{width:100%;content:"Netcheck - Tristan Brotherton";top:0;text-align:center;color:#4c4c4c;line-height:20px}p.label{color:#fff;background-color:#393456;line-height:45px;z-index:10;position:absolute;top:8px;left:0;right:20px;padding-left:15px}p.label:before{content:"$";margin-right:8px;opacity:.5;line-height:45px}p.label:after{-webkit-animation:blink 1s linear 1s infinite;animation:blink 1s linear 1s infinite;content:" ";width:8px;height:18px;margin-left:1px;background:#fec041;margin-top:11px}.data-container{color:#fff;line-height:18px;white-space:pre;overflow-y:scroll;overflow-x:hidden;top:20px;left:0;right:0;bottom:0;position:absolute;padding:15px}.status-message{text-decoration:underline;cursor:pointer;margin-right:10px;s}@-webkit-keyframes blink{0%{background:rgba(254,192,65,0)}50%{background:rgba(254,192,65,0)}51%{background:#fec041}100%{background:#fec041}}@keyframes blink{0%{background:rgba(254,192,65,0)}50%{background:rgba(254,192,65,0)}51%{background:#fec041}100%{background:#fec041}}.footer{color:#fff;position:absolute;bottom:15px;width:100%;text-align:center}.footer a{color:#fff;text-decoration:underline}</style>
+<script src=https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment.min.js></script>
+<script src=https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js></script>
+<script src=https://cdnjs.cloudflare.com/ajax/libs/livestamp/1.1.2/livestamp.min.js></script>
+<script>$.ajaxSetup({cache:false});function getConnectionData(){$(".status-message").html("Checking Connection Stats...");$.get("connection.log",function(b){var a=new Date();$(".data-container").html(b);$(".data-container").animate({scrollTop:$(".data-container").prop("scrollHeight")},1000);setTimeout(function(){$(".status-message").html("Last checked: <time class='time-checked'></time>");$(".time-checked").livestamp(new Date(a))},2000)})}$(document).ready(function(){getConnectionData();$(".status-message").click(function(){getConnectionData()})});</script>
+</head>
+<body>
+<div class=terminal>
+<p class=label>Netcheck - <span class=status-message></span></p>
+<div class=data-container>
+</div>
+</div>
+<div class=footer>
+Made by with ❤️ by Tristan Brotherton -
+<a href=https://github.com/TristanBrotherton/netcheck> Get it on Github
+</a>
+</body>
+</html>
