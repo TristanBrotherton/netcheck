@@ -159,7 +159,7 @@ RUN_SPEEDTEST() {
 NET_CHECK() {
   while true; do
     # Check for network connection
-    wget -q --tries=5 --timeout=20 -O - $VAR_HOST > /dev/null
+    nohup wget -q --tries=5 --timeout=20 -O - $VAR_HOST > /dev/null 2>&1
     if [[ $? -eq 0 ]]; then :
       # We are currently online
       # Did we just reconnect?
