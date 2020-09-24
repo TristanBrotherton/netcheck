@@ -202,11 +202,11 @@ CLEANUP() {
 }
 
 trap CLEANUP EXIT
-while getopts "fcup:whelp-s" opt; do
+while getopts "f:c:u:p:whelp-s" opt; do
   case $opt in
     f)
       echo "Logging to custom file: $OPTARG"
-      VAR_LOGFILE=$
+      VAR_LOGFILE=$OPTARG
       VAR_CUSTOOM_LOG=true
       ;;
     c)
