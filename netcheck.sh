@@ -109,7 +109,7 @@ GET_LOCAL_IP() {
 
 START_WEBSERVER() {
   # Find python version and start corresponding webserver
-  VAR_PYTHON_VERSION = $(python -c 'import sys; print(sys.version_info[0])')
+  VAR_PYTHON_VERSION=$(python -c 'import sys; print(sys.version_info[0])')
   case $VAR_PYTHON_VERSION in
     2)
       (cd $VAR_SCRIPTLOC/log; python -m SimpleHTTPServer $1 &) &> /dev/null  
