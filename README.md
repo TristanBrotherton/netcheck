@@ -27,4 +27,10 @@ You can use a service such as NGROK to allow you to see the web interface outsid
     netcheck.sh -u            URL/Host to check, default is http://www.google.com
     netcheck.sh -w                                  Enable the remote webinteface
     netcheck.sh -p                  Specify an optional port for the webinterface
-     
+    netcheck.sh -i                           Install netcheck as a system service     
+
+## Run as a service
+You can optionally run netcheck as a system service. For systems that use 
+systemctl (Linux) you may use its service installation script:
+
+    sudo ./netcheck.sh -i

@@ -44,8 +44,18 @@ PRINT_HELP() {
   echo "$VAR_SCRIPTNAME -c                Check connection ever (n) seconds. Default is 5"
   echo "$VAR_SCRIPTNAME -u            URL/Host to check, default is http://www.google.com"
   echo "$VAR_SCRIPTNAME -w                                  Enable the remote webinteface"
-  echo "$VAR_SCRIPTNAME -p                  Specify an optional port for the webinterface"
+  echo "$VAR_SCRIPTNAME -p                  Specify an optional port for the webinterface"  
+  echo "$VAR_SCRIPTNAME -i                           Install netcheck as a system service"
   echo
+}
+
+PRINT_MANAGESERVICE() {
+  PRINT_HR
+  echo "Use the command:"
+  echo -e "                                               sudo systemctl$COLOR_GREEN start$COLOR_RESET netcheck"
+  echo -e "                                                             $COLOR_RED stop$COLOR_RESET netcheck"
+  echo "To manage the service."
+  PRINT_HR
 }
 
 PRINT_INSTALL() {
@@ -98,7 +108,16 @@ GET_LOCAL_IP() {
 }
 
 START_WEBSERVER() {
-  (cd $VAR_SCRIPTLOC/log; python -m SimpleHTTPServer $1 &) &> /dev/null
+  # Find python version and start corresponding webserver
+  VAR_PYTHON_VERSION = $(python -c 'import sys; print(sys.version_info[0])')
+  case $VAR_PYTHON_VERSION in
+    2)
+      (cd $VAR_SCRIPTLOC/log; python -m SimpleHTTPServer $1 &) &> /dev/null  
+    ;;
+    3)
+      (cd $VAR_SCRIPTLOC/log; python -m http.server $1 &) &> /dev/null
+    ;;
+  esac
 }
 
 SETUP_WEBSERVER() {
@@ -193,8 +212,51 @@ NET_CHECK() {
 
 }
 
+INSTALL_AS_SERVICE() {
+  if ! command -v systemctl &> /dev/null; then
+    echo "Systemctl not found."
+    echo "Netcheck can only be installed as a service on systems using systemctl."
+    echo "You will need to manually setup Netcheck as a service on your system."
+    exit
+  else 
+    FILE=/etc/systemd/system/netcheck.service
+    if [ -f "$FILE" ]; then
+      echo "Netcheck already installed as a service."
+      PRINT_MANAGESERVICE
+      exit
+    else
+      echo "You will need to authenticate using sudo to install."
+      echo "Installing netcheck as a service..."
+      sudo tee -a /etc/systemd/system/netcheck.service <<EOL >/dev/null
+[Unit]
+Description=Netcheck Service
+
+[Service]
+WorkingDirectory=$VAR_SCRIPTLOC/
+ExecStart=$VAR_SCRIPTLOC/VAR_SCRIPTNAME
+
+[Install]
+WantedBy=multi-user.target
+EOL
+      sudo systemctl enable netcheck.service >/dev/null
+      PRINT_MANAGESERVICE
+      echo "Would you like to start netcheck as a service now?"
+      echo -n "(y/n): "
+      read answer
+      if [ "$answer" != "${answer#[Yy]}" ] ;then
+        sudo systemctl start netcheck
+        exit
+      else
+        exit
+      fi
+    fi
+  fi
+}
+
 CLEANUP() {
-  PRINT_LOGGING_TERMINATED
+  if [[ $VAR_INSTALL_AS_SERVICE = false ]]; then :
+    PRINT_LOGGING_TERMINATED
+  fi
   if [[ $VAR_ENABLE_WEBINTERFACE = true ]]; then :
     echo "Shutting down webinterface..."
     kill 0
@@ -202,7 +264,7 @@ CLEANUP() {
 }
 
 trap CLEANUP EXIT
-while getopts "f:c:u:p:whelp-s" opt; do
+while getopts "f:c:u:p:whelp-si" opt; do
   case $opt in
     f)
       echo "Logging to custom file: $OPTARG"
@@ -227,6 +289,9 @@ while getopts "f:c:u:p:whelp-s" opt; do
     s)
       VAR_SPEEDTEST_DISABLED=true
       ;;
+    i) 
+      VAR_INSTALL_AS_SERVICE=true
+      ;;
     h)
       PRINT_HELP
       exit 1
@@ -242,6 +307,9 @@ while getopts "f:c:u:p:whelp-s" opt; do
   esac
 done
 
+if [[ $VAR_INSTALL_AS_SERVICE = true ]]; then :
+  INSTALL_AS_SERVICE
+fi
 PRINT_HR
 SETUP_WEBSERVER
 CHECK_FOR_SPEEDTEST
