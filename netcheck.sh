@@ -233,7 +233,7 @@ Description=Netcheck Service
 
 [Service]
 WorkingDirectory=$VAR_SCRIPTLOC/
-ExecStart=$VAR_SCRIPTLOC/VAR_SCRIPTNAME
+ExecStart=$VAR_SCRIPTLOC/$VAR_SCRIPTNAME
 
 [Install]
 WantedBy=multi-user.target
