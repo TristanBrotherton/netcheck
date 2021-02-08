@@ -84,7 +84,7 @@ PRINT_LOGSTART() {
 
 PRINT_DISCONNECTED() {
   echo "$STRING_2 $(date "+%a %d %b %Y %H:%M:%S %Z")" >> $VAR_LOGFILE
-  echo -e $COLOR_RED"$STRING_2 $(date)"$COLOR_RESET
+  echo -e $COLOR_RED"$STRING_2 $(date "+%a %d %b %Y %H:%M:%S %Z")"$COLOR_RESET
 }
 
 PRINT_RECONNECTED() {
