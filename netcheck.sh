@@ -46,6 +46,8 @@ PRINT_HELP() {
   echo "$VAR_SCRIPTNAME -w                                  Enable the remote webinteface"
   echo "$VAR_SCRIPTNAME -p                  Specify an optional port for the webinterface"  
   echo "$VAR_SCRIPTNAME -i                           Install netcheck as a system service"
+  echo "$VAR_SCRIPTNAME -d path/script            Specify script to execute on disconnect"
+  echo "$VAR_SCRIPTNAME -r path/script             Specify script to execute on reconnect"
   echo
 }
 
@@ -87,9 +89,25 @@ PRINT_DISCONNECTED() {
   echo -e $COLOR_RED"$STRING_2 $(date "+%a %d %b %Y %H:%M:%S %Z")"$COLOR_RESET
 }
 
+DISCONNECTED_EVENT_HOOK() {
+  if [[ $VAR_ACT_ON_DISCONNECT = true ]]; then :
+    COMMAND="$VAR_DISCONNECT_SCRIPT &"
+    echo -e $COLOR_RED"$STRING_2 EXEC $COMMAND"$COLOR_RESET
+    eval "$COMMAND"
+  fi
+}
+
 PRINT_RECONNECTED() {
   echo "$STRING_1 $(date "+%a %d %b %Y %H:%M:%S %Z")" >> $VAR_LOGFILE
   echo -e $COLOR_GREEN"$STRING_1 $(date "+%a %d %b %Y %H:%M:%S %Z")"$COLOR_RESET
+}
+
+RECONNECTED_EVENT_HOOK() {
+  if [[ $VAR_ACT_ON_RECONNECT = true ]]; then :
+    COMMAND="$VAR_RECONNECT_SCRIPT $1 &"
+    echo -e $COLOR_RED"$STRING_1 EXEC $COMMAND"$COLOR_RESET
+    eval "$COMMAND"
+  fi
 }
 
 PRINT_DURATION() {
@@ -122,7 +140,7 @@ START_WEBSERVER() {
 
 SETUP_WEBSERVER() {
   if [[ $VAR_ENABLE_WEBINTERFACE = true ]]; then :
-    if [[ $VAR_CUSTOOM_LOG = true ]]; then :
+    if [[ $VAR_CUSTOM_LOG = true ]]; then :
       echo -e "Web Interface:    $COLOR_RED Not Available $COLOR_RESET"
       echo -e "Custom log destinations are not supported by webinterface"
     else
@@ -192,8 +210,8 @@ NET_CHECK() {
         PRINT_HR | tee -a $VAR_LOGFILE
         SECONDS=0
         VAR_CONNECTED=true
+        RECONNECTED_EVENT_HOOK $VAR_DURATION
       fi
-
     else
       # We are offline
       if [[ $VAR_CONNECTED = false ]]; then :
@@ -201,6 +219,7 @@ NET_CHECK() {
         else
           # We just disconnected
           PRINT_DISCONNECTED
+          DISCONNECTED_EVENT_HOOK
           SECONDS=0
           VAR_CONNECTED=false
       fi
@@ -264,12 +283,22 @@ CLEANUP() {
 }
 
 trap CLEANUP EXIT
-while getopts "f:c:u:p:whelp-si" opt; do
+while getopts "f:d:r:c:u:p:whelp-si" opt; do
   case $opt in
     f)
       echo "Logging to custom file: $OPTARG"
       VAR_LOGFILE=$OPTARG
-      VAR_CUSTOOM_LOG=true
+      VAR_CUSTOM_LOG=true
+      ;;
+    d)
+      echo "Executing $OPTARG script on disconnect"
+      VAR_DISCONNECT_SCRIPT=$OPTARG
+      VAR_ACT_ON_DISCONNECT=true
+      ;;
+    r)
+      echo "Executing $OPTARG script on reconnect"
+      VAR_RECONNECT_SCRIPT=$OPTARG
+      VAR_ACT_ON_RECONNECT=true
       ;;
     c)
       echo "Checking connection every: $OPTARG seconds"
