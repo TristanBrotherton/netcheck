@@ -8,7 +8,46 @@
 <script src=https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment.min.js></script>
 <script src=https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js></script>
 <script src=https://cdnjs.cloudflare.com/ajax/libs/livestamp/1.1.2/livestamp.min.js></script>
-<script>$.ajaxSetup({cache:false});function getConnectionData(){$(".status-message").html("Checking Connection Stats...");$.get("connection.log",function(b){var a=new Date();$(".data-container").html(b);$(".data-container").animate({scrollTop:$(".data-container").prop("scrollHeight")},1000);setTimeout(function(){$(".status-message").html("Last checked: <time class='time-checked'></time>");$(".time-checked").livestamp(new Date(a))},2000)})}$(document).ready(function(){getConnectionData();$(".status-message").click(function(){getConnectionData()})});</script>
+<script>
+
+// Time in seconds to check for new data.
+var UPDATE_STATS_INTERVAL_SECONDS = 60;
+// Disable caching
+$.ajaxSetup({
+    cache: false
+});
+// Get log data
+function getConnectionData() {
+    $(".status-message").html("Checking Connection Stats...");
+    $.get("connection.log", function(b) {
+        var a = new Date();
+        $(".data-container").html(b);
+        $(".data-container").animate({
+            scrollTop: $(".data-container").prop("scrollHeight")
+        }, 1000);
+        setTimeout(function() {
+            $(".status-message").html("Last checked: <time class='time-checked'></time>");
+            $(".time-checked").livestamp(new Date(a))
+        }, 2000)
+    })
+};
+// Update log data every N seconds
+function updateConnectionData() {
+    setInterval(function() {
+            getConnectionData();
+        }, (UPDATE_STATS_INTERVAL_SECONDS * 1000));
+};
+// Fire it all up
+$(document).ready(function() {
+    getConnectionData();
+    updateConnectionData();
+    $(".status-message").click(function() {
+        getConnectionData()
+    });
+
+});
+
+</script>
 </head>
 <body>
 <div class=terminal>
@@ -17,7 +56,7 @@
 </div>
 </div>
 <div class=footer>
-Made by with ❤️ by Tristan Brotherton -
+Made with ❤️ by Tristan Brotherton -
 <a href=https://github.com/TristanBrotherton/netcheck> Get it on Github
 </a>
 </body>
