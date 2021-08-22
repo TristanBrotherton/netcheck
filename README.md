@@ -27,10 +27,21 @@ You can use a service such as NGROK to allow you to see the web interface outsid
     netcheck.sh -u            URL/Host to check, default is http://www.google.com
     netcheck.sh -w                                  Enable the remote webinteface
     netcheck.sh -p                  Specify an optional port for the webinterface
-    netcheck.sh -i                           Install netcheck as a system service     
+    netcheck.sh -i                           Install netcheck as a system service
+    netcheck.sh -d path/script            Specify script to execute on disconnect
+    netcheck.sh -r path/script             Specify script to execute on reconnect
 
 ## Run as a service
 You can optionally run netcheck as a system service. For systems that use 
 systemctl (Linux) you may use its service installation script:
 
     sudo ./netcheck.sh -i
+
+## Scripts for disconnect/reconnect events
+You can optionally define actions to be executed upon disconnect or reconnect.
+To do so you may use the `-d` and `-r` options. 
+
+Two sample `bash` scripts making use of the `espeak-ng` text-to-speech utility are provided
+under the `sample-scripts` to showcase how these options can be used:
+
+    ./netcheck.sh -d sample-scripts/disconnected.sh -r sample-scripts/reconnected.sh
