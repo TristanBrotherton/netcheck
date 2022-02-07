@@ -126,14 +126,21 @@ GET_LOCAL_IP() {
 }
 
 START_WEBSERVER() {
+  # Debian 11 and above drops the python symlink
+  if [ "$(grep -Ei 'bullseye' /etc/*release)" ]; then
+    VAR_PYTHON_EXEC=python3
+  else
+    VAR_PYTHON_EXEC=python
+  fi
+
   # Find python version and start corresponding webserver
-  VAR_PYTHON_VERSION=$(python -c 'import sys; print(sys.version_info[0])')
+  VAR_PYTHON_VERSION=$($VAR_PYTHON_EXEC -c 'import sys; print(sys.version_info[0])')
   case $VAR_PYTHON_VERSION in
     2)
-      (cd $VAR_SCRIPTLOC/log; python -m SimpleHTTPServer $1 &) &> /dev/null  
+      (cd $VAR_SCRIPTLOC/log; $VAR_PYTHON_EXEC -m SimpleHTTPServer $1 &) &> /dev/null  
     ;;
     3)
-      (cd $VAR_SCRIPTLOC/log; python -m http.server $1 &) &> /dev/null
+      (cd $VAR_SCRIPTLOC/log; $VAR_PYTHON_EXEC -m http.server $1 &) &> /dev/null
     ;;
   esac
 }
