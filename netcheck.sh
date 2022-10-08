@@ -197,7 +197,7 @@ INSTALL_SPEEDTEST() {
 }
 
 RUN_SPEEDTEST() {
-  $VAR_SCRIPTLOC/speedtest-cli.py --simple | sed 's/^/                                                 /' | tee -a $VAR_LOGFILE
+  $VAR_SCRIPTLOC/speedtest-cli.py --simple --secure | sed 's/^/                                                 /' | tee -a $VAR_LOGFILE
 }
 
 NET_CHECK() {
