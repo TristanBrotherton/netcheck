@@ -207,6 +207,11 @@ NET_CHECK() {
     # Check for network connection
     nohup wget -q --tries=5 --timeout=20 -O - $VAR_HOST > /dev/null 2>&1
     if [[ $? -eq 0 ]]; then :
+      if [ $VAR_ENABLE_ALWAYS_SPEEDTEST = true ] && [ $VAR_CONNECTED = true ]; then :
+        echo "$STRING_5" | tee -a $VAR_LOGFILE
+        RUN_SPEEDTEST
+        PRINT_HR | tee -a $VAR_LOGFILE
+      fi
       # We are currently online
       # Did we just reconnect?
       if [[ $VAR_CONNECTED = false ]]; then :
@@ -222,11 +227,6 @@ NET_CHECK() {
         VAR_CONNECTED=true
         RECONNECTED_EVENT_HOOK $VAR_DURATION
       fi
-    if [[ $VAR_ENABLE_ALWAYS_SPEEDTEST = true ]]; then :
-      echo "$STRING_5" | tee -a $VAR_LOGFILE
-      RUN_SPEEDTEST
-      PRINT_HR | tee -a $VAR_LOGFILE
-    fi
     else
       # We are offline
       if [[ $VAR_CONNECTED = false ]]; then :
