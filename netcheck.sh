@@ -298,7 +298,7 @@ CLEANUP() {
 }
 
 trap CLEANUP EXIT
-while getopts "f:d:r:c:u:p:whelp-si:e" opt; do
+while getopts "f:d:r:c:u:p:e:whelp-si" opt; do
   case $opt in
     f)
       echo "Logging to custom file: $OPTARG"
