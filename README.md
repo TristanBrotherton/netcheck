@@ -45,3 +45,6 @@ Two sample `bash` scripts making use of the `espeak-ng` text-to-speech utility a
 under the `sample-scripts` to showcase how these options can be used:
 
     ./netcheck.sh -d sample-scripts/disconnected.sh -r sample-scripts/reconnected.sh
+    
+ ## PRs Welcome! 
+ If Necheck is mising something you'd like to have, feel free to submit a PR. 
