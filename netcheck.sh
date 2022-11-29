@@ -298,7 +298,7 @@ CLEANUP() {
 }
 
 trap CLEANUP EXIT
-while getopts "f:d:r:c:u:p:e:whelp-si" opt; do
+while getopts "f:d:r:c:u:p:whelp-sie" opt; do
   case $opt in
     f)
       echo "Logging to custom file: $OPTARG"
@@ -336,12 +336,12 @@ while getopts "f:d:r:c:u:p:e:whelp-si" opt; do
     i) 
       VAR_INSTALL_AS_SERVICE=true
       ;;
+    e)
+      VAR_ENABLE_ALWAYS_SPEEDTEST=true
+      ;;
     h)
       PRINT_HELP
       exit 1
-      ;;
-    e)
-      VAR_ENABLE_ALWAYS_SPEEDTEST=true
       ;;
     \?)
       echo "Invalid option: -$OPTARG (try -help for clues)"
