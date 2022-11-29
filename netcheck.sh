@@ -14,6 +14,7 @@ VAR_SPEEDTEST_DISABLED=false
 VAR_CHECK_TIME=5
 VAR_HOST=http://www.google.com
 VAR_ENABLE_WEBINTERFACE=false
+VAR_ENABLE_ALWAYS_SPEEDTEST=false
 VAR_WEB_PORT=9000
 VAR_CUSTOM_WEB_PORT=false
 
@@ -48,6 +49,7 @@ PRINT_HELP() {
   echo "$VAR_SCRIPTNAME -i                           Install netcheck as a system service"
   echo "$VAR_SCRIPTNAME -d path/script            Specify script to execute on disconnect"
   echo "$VAR_SCRIPTNAME -r path/script             Specify script to execute on reconnect"
+  echo "$VAR_SCRIPTNAME -e                      Excecute speedtest every connection check"
   echo
 }
 
@@ -205,6 +207,11 @@ NET_CHECK() {
     # Check for network connection
     nohup wget -q --tries=5 --timeout=20 -O - $VAR_HOST > /dev/null 2>&1
     if [[ $? -eq 0 ]]; then :
+      if [ $VAR_ENABLE_ALWAYS_SPEEDTEST = true ] && [ $VAR_CONNECTED = true ]; then :
+        echo "$STRING_5" | tee -a $VAR_LOGFILE
+        RUN_SPEEDTEST
+        PRINT_HR | tee -a $VAR_LOGFILE
+      fi
       # We are currently online
       # Did we just reconnect?
       if [[ $VAR_CONNECTED = false ]]; then :
@@ -212,6 +219,7 @@ NET_CHECK() {
         VAR_DURATION=$SECONDS
         PRINT_DURATION
         if [[ $VAR_SPEEDTEST_READY = true ]]; then :
+          PRINT_HR | tee -a $VAR_LOGFILE
           RUN_SPEEDTEST
         fi
         PRINT_HR | tee -a $VAR_LOGFILE
@@ -290,7 +298,7 @@ CLEANUP() {
 }
 
 trap CLEANUP EXIT
-while getopts "f:d:r:c:u:p:whelp-si" opt; do
+while getopts "f:d:r:c:u:p:whelp-sie" opt; do
   case $opt in
     f)
       echo "Logging to custom file: $OPTARG"
@@ -327,6 +335,9 @@ while getopts "f:d:r:c:u:p:whelp-si" opt; do
       ;;
     i) 
       VAR_INSTALL_AS_SERVICE=true
+      ;;
+    e)
+      VAR_ENABLE_ALWAYS_SPEEDTEST=true
       ;;
     h)
       PRINT_HELP
