@@ -6,6 +6,9 @@ Once it reconnects it will log the reconnected internet speed and continue monit
 Netcheck also include an optional web interface for viewing your connection logs remotely from a web browser.
 You can use a service such as NGROK to allow you to see the web interface outside of your network.
 
+ ## PRs Welcome! 
+ If Necheck is mising something you'd like to have, feel free to submit a PR. 
+
 ## Installation
 
     git clone https://github.com/TristanBrotherton/netcheck.git
