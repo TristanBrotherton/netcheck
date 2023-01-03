@@ -7,12 +7,16 @@ log=/usr/local/src/netcheck/log/connection.log
 space=" "
 style=square
 while [[ $# -gt 0 ]]; do
-  case "$1" in
+  case "${1}" in
     -s|--style)
-      style="$2"
-      shift 2
+      style="${2}"
+      shift
       ;;
     -n|--no-space) space="" ;;
+    -f)
+      log="${2}"
+      shift
+      ;;
     *)
       echo "Unexpected option ${1}" >&2
       exit 1
@@ -79,7 +83,7 @@ for day_n in $(seq 0 6); do
   printf '\e[m%-4s' "${name_of_days[day_n]}"
   for week_n in $(seq 0 52); do
     key=$(( week_n * 7 + day_n ))
-    if [[ -v commits_per_day["${key}"] ]]; then
+    if [[ $commits_max != 0 && -v commits_per_day["${key}"] ]]; then
       value=$(( ${commits_per_day["${key}"]}00 / commits_max))
       if (( value <= 25 )); then
         # Low activity
