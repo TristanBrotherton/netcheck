@@ -45,14 +45,13 @@ declare -A commits_per_day
 commits_max=0
 
 year=`date +"%Y"`
-# since=`date -d "01 Jan $year"`
 since=$(date -d "$(date -d '1 year ago + 1 day' +"%F -%u day")" +"%s")
 
 while read -r commits_n commits_date; do
   (( commits_n > commits_max )) && commits_max=$commits_n
   date_diff=$(( ($(date --date="${commits_date} 13:00 UTC" "+%s") - since) / (60*60*24) ))
   commits_per_day["${date_diff}"]=$commits_n
-done <<< $(IFS=$'\n' ; for d in `grep $year $log | grep "LINK DOWN" | sed 's/LINK DOWN://' | sed 's/^[ \t]*//'` ; do date -d $d +"%Y-%m-%d" ; done | uniq -c)
+done <<< $(IFS=$'\n' ; for d in `grep "LINK DOWN" $log | sed 's/LINK DOWN://' | sed 's/^[ \t]*//'` ; do date -d $d +"%Y-%m-%d" ; done | uniq -c)
 
 # Print name of months
 current_month=$(date "+%b")
