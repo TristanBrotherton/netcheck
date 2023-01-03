@@ -54,6 +54,10 @@ A github-like activity chart displaying link down events can be displayed with:
 
     ./internet_status_chart.sh
 
+To load custom log file use the -f option:
+
+    ./internet_status_chart.sh -f path/my_log_file.log
+
 ![Link down events graph](linkdown_graph.png)
 
 (The script is adapted from [https://github.com/aaossa/git-activity])
