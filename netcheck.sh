@@ -20,6 +20,7 @@ VAR_CUSTOM_WEB_PORT=false
 
 COLOR_RED="\033[31m"
 COLOR_GREEN="\033[32m"
+COLOR_CYAN="\033[36m"
 COLOR_RESET="\033[0m"
 
 STRING_1="LINK RECONNECTED:                               "
@@ -27,6 +28,7 @@ STRING_2="LINK DOWN:                                      "
 STRING_3="TOTAL DOWNTIME:                                 "
 STRING_4="RECONNECTED LINK SPEED:                         "
 STRING_5="CONNECTED LINK SPEED:                           "
+STRING_6="LINK CHECKED:                                   "
 
 PRINT_NL() {
   echo
@@ -94,7 +96,7 @@ PRINT_DISCONNECTED() {
 DISCONNECTED_EVENT_HOOK() {
   if [[ $VAR_ACT_ON_DISCONNECT = true ]]; then :
     COMMAND="$VAR_DISCONNECT_SCRIPT &"
-    echo -e $COLOR_RED"$STRING_2 EXEC $COMMAND"$COLOR_RESET
+    echo -e $COLOR_CYAN"$STRING_2 EXEC $COMMAND"$COLOR_RESET
     eval "$COMMAND"
   fi
 }
@@ -107,7 +109,15 @@ PRINT_RECONNECTED() {
 RECONNECTED_EVENT_HOOK() {
   if [[ $VAR_ACT_ON_RECONNECT = true ]]; then :
     COMMAND="$VAR_RECONNECT_SCRIPT $1 &"
-    echo -e $COLOR_RED"$STRING_1 EXEC $COMMAND"$COLOR_RESET
+    echo -e $COLOR_CYAN"$STRING_1 EXEC $COMMAND"$COLOR_RESET
+    eval "$COMMAND"
+  fi
+}
+
+CHECK_EVENT_HOOK() {
+  if [[ $VAR_ACT_ON_CHECK = true ]]; then :
+    COMMAND="$VAR_CHECK_SCRIPT $1 &"
+    # echo -e $COLOR_CYAN"$STRING_6 EXEC $COMMAND"$COLOR_RESET
     eval "$COMMAND"
   fi
 }
@@ -239,7 +249,7 @@ NET_CHECK() {
           VAR_CONNECTED=false
       fi
     fi
-
+    CHECK_EVENT_HOOK
     sleep $VAR_CHECK_TIME
 
   done
@@ -298,7 +308,7 @@ CLEANUP() {
 }
 
 trap CLEANUP EXIT
-while getopts "f:d:r:c:u:p:whelp-sie" opt; do
+while getopts "f:d:r:t:c:u:p:whelp-sie" opt; do
   case $opt in
     f)
       echo "Logging to custom file: $OPTARG"
@@ -314,6 +324,11 @@ while getopts "f:d:r:c:u:p:whelp-sie" opt; do
       echo "Executing $OPTARG script on reconnect"
       VAR_RECONNECT_SCRIPT=$OPTARG
       VAR_ACT_ON_RECONNECT=true
+      ;;
+    t)
+      echo "Executing $OPTARG script on check"
+      VAR_CHECK_SCRIPT=$OPTARG
+      VAR_ACT_ON_CHECK=true
       ;;
     c)
       echo "Checking connection every: $OPTARG seconds"
