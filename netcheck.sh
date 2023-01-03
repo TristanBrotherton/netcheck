@@ -28,7 +28,6 @@ STRING_2="LINK DOWN:                                      "
 STRING_3="TOTAL DOWNTIME:                                 "
 STRING_4="RECONNECTED LINK SPEED:                         "
 STRING_5="CONNECTED LINK SPEED:                           "
-STRING_6="LINK CHECKED:                                   "
 
 PRINT_NL() {
   echo
@@ -117,7 +116,6 @@ RECONNECTED_EVENT_HOOK() {
 CHECK_EVENT_HOOK() {
   if [[ $VAR_ACT_ON_CHECK = true ]]; then :
     COMMAND="$VAR_CHECK_SCRIPT $1 &"
-    # echo -e $COLOR_CYAN"$STRING_6 EXEC $COMMAND"$COLOR_RESET
     eval "$COMMAND"
   fi
 }
