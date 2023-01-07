@@ -54,24 +54,7 @@ PRINT_HELP() {
   echo
 }
 
-PRINT_MANAGESERVICE() {
-  PRINT_HR
-  echo "Use the command:"
-  echo -e "                                               sudo systemctl$COLOR_GREEN start$COLOR_RESET netcheck"
-  echo -e "                                                             $COLOR_RED stop$COLOR_RESET netcheck"
-  echo "To manage the service."
-  PRINT_HR
-}
 
-PRINT_INSTALL() {
-  echo
-  echo "Installing this library will allow tests of network connection speed."
-  echo "https://github.com/sivel/speedtest-cli"
-  echo "Installation is a single python file, saved in:"
-  echo "$VAR_SCRIPTLOC"
-  echo
-  echo "Install in this directory now? (y/n)"
-}
 
 PRINT_INSTALLING() {
   echo
@@ -85,6 +68,8 @@ PRINT_LOGDEST() {
 PRINT_LOGSTART() {
   echo "************ Monitoring started at: $(date "+%a %d %b %Y %H:%M:%S %Z") ************" >> $VAR_LOGFILE
   echo -e "************$COLOR_GREEN Monitoring started at: $(date "+%a %d %b %Y %H:%M:%S %Z") $COLOR_RESET************"
+  
+  Add ing some stuff here. 
 }
 
 PRINT_DISCONNECTED() {
@@ -92,10 +77,23 @@ PRINT_DISCONNECTED() {
   echo -e $COLOR_RED"$STRING_2 $(date "+%a %d %b %Y %H:%M:%S %Z")"$COLOR_RESET
 }
 
+INSTALL_wongwonga() {
+  PRINT_INSTALL
+  read -r response
+  if [[ $response =~ ^([yY][eE][sS]|[yY])$ ]]; then
+    PRINT_INSTALLING
+    wget -q -O "$VAR_SCRIPTLOC/speedtest-cli.py" https://raw.githubusercontent.com/sivel/speedtest-cli/master/speedtest.py
+    chmod +x "$VAR_SCRIPTLOC/speedtest-cli.py"
+    PRINT_NL
+    CHECK_FOR_SPEEDTEST
+  else
+    VAR_SPEEDTEST_DISABLED=true
+  fi
+
 DISCONNECTED_EVENT_HOOK() {
   if [[ $VAR_ACT_ON_DISCONNECT = true ]]; then :
     COMMAND="$VAR_DISCONNECT_SCRIPT &"
-    echo -e $COLOR_CYAN"$STRING_2 EXEC $COMMAND"$COLOR_RESET
+    echo -e $COLOR_CYAN"$STRING_2 change this to there
     eval "$COMMAND"
   fi
 }
@@ -136,7 +134,7 @@ GET_LOCAL_IP() {
 }
 
 START_WEBSERVER() {
-  # Debian 11 and above drops the python symlink
+  # here is a thing I did. 
   if [ "$(grep -Ei 'bullseye' /etc/*release)" ]; then
     VAR_PYTHON_EXEC=python3
   else
