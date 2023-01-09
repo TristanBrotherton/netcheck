@@ -22,12 +22,7 @@ COLOR_RED="\033[31m"
 COLOR_GREEN="\033[32m"
 COLOR_CYAN="\033[36m"
 COLOR_RESET="\033[0m"
-
-STRING_1="LINK RECONNECTED:                               "
-STRING_2="LINK DOWN:                                      "
-STRING_3="TOTAL DOWNTIME:                                 "
-STRING_4="RECONNECTED LINK SPEED:                         "
-STRING_5="CONNECTED LINK SPEED:                           "
+           
 
 PRINT_NL() {
   echo
@@ -42,6 +37,11 @@ PRINT_HELP() {
   echo
   echo "$VAR_SCRIPTNAME -h                                           Display this message"
   echo "$VAR_SCRIPTNAME -f path/my_log_file.log          Specify log file and path to use"
+  echo "$VAR_SCRIPTNAME -s                                 Disable speedtest on reconnect"
+  echo "$VAR_SCRIPTNAME -c                Check connection ever (n) seconds. Default is 5"
+  echo "$VAR_SCRIPTNAME -u            URL/Host to check, default is http://www.google.com"
+  echo "$VAR_SCRIPTNAME -w                                  Enable the remote webinteface"
+    echo "$VAR_SCRIPTNAME -f path/my_log_file.log          Specify log file and path to use"
   echo "$VAR_SCRIPTNAME -s                                 Disable speedtest on reconnect"
   echo "$VAR_SCRIPTNAME -c                Check connection ever (n) seconds. Default is 5"
   echo "$VAR_SCRIPTNAME -u            URL/Host to check, default is http://www.google.com"
