@@ -34,6 +34,7 @@ You can use a service such as NGROK to allow you to see the web interface outsid
     netcheck.sh -d path/script            Specify script to execute on disconnect
     netcheck.sh -r path/script             Specify script to execute on reconnect
     netcheck.sh -t path/script        Specify script to execute after every check
+    netcheck.sh -e                      Excecute speedtest every connection check
 
 ## Run as a service
 You can optionally run netcheck as a system service. For systems that use 
