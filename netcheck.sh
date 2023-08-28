@@ -25,7 +25,7 @@ COLOR_RESET="\033[0m"
 
 STRING_1="LINK RECONNECTED:                               "
 STRING_2="LINK DOWN:                                      "
-STRING_3="TOTAL DOWNTIME:                                 "
+STRING_3="TOTAL DOWNTIME IN SECONDS:                      "
 STRING_4="RECONNECTED LINK SPEED:                         "
 STRING_5="CONNECTED LINK SPEED:                           "
 
@@ -61,16 +61,6 @@ PRINT_MANAGESERVICE() {
   echo -e "                                                             $COLOR_RED stop$COLOR_RESET netcheck"
   echo "To manage the service."
   PRINT_HR
-}
-
-PRINT_INSTALL() {
-  echo
-  echo "Installing this library will allow tests of network connection speed."
-  echo "https://github.com/sivel/speedtest-cli"
-  echo "Installation is a single python file, saved in:"
-  echo "$VAR_SCRIPTLOC"
-  echo
-  echo "Install in this directory now? (y/n)"
 }
 
 PRINT_INSTALLING() {
@@ -153,6 +143,26 @@ START_WEBSERVER() {
       (cd $VAR_SCRIPTLOC/log; $VAR_PYTHON_EXEC -m http.server $1 &) &> /dev/null
     ;;
   esac
+}
+
+SETUP_SERVER() {
+  if [[ $VAR_ENABLE_WEBINTERFACE = true ]]; then :
+    if [[ $VAR_CUSTOM_LOG = true ]]; then :
+      echo -e "Web Interface:    $COLOR_RED Not Available $COLOR_RESET"
+      echo -e "Custom log destinations are not supported by webinterface"
+    else
+      echo -e "Web Interface:    $COLOR_GREEN Enabled $COLOR_RESET"
+      if [[ $VAR_CUSTOM_WEB_PORT = false ]]; then :
+        echo -e "                   http://localhost:$VAR_WEB_PORT"
+        GET_LOCAL_IP $VAR_WEB_PORT
+        START_WEBSERVER $VAR_WEB_PORT
+      else
+        echo -e "                   http://localhost:$VAR_CUSTOM_WEB_PORT"
+        GET_LOCAL_IP $VAR_CUSTOM_WEB_PORT
+        START_WEBSERVER $VAR_CUSTOM_WEB_PORT
+      fi
+    fi
+  fi
 }
 
 SETUP_WEBSERVER() {
