@@ -1,10 +1,6 @@
 #!/bin/bash
 
-################################################################################
-##               Netcheck - Simple internet connection logging                ##
-##               https://github.com/TristanBrotherton/netcheck                ##
-##                                       -- Tristan Brotherton                ##
-################################################################################
+
 
 VAR_SCRIPTNAME=`basename "$0"`
 VAR_SCRIPTLOC="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
