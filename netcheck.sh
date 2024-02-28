@@ -1,22 +1,13 @@
 #!/bin/bash
 
-################################################################################
-##               Netcheck - Simple internet connection logging                ##
-##               https://github.com/TristanBrotherton/netcheck                ##
-##                                       -- Tristan Brotherton                ##
-################################################################################
+
 
 VAR_SCRIPTNAME=`basename "$0"`
 VAR_SCRIPTLOC="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 VAR_CONNECTED=true
 VAR_LOGFILE=log/connection.log
 VAR_SPEEDTEST_DISABLED=false
-VAR_CHECK_TIME=5
-VAR_HOST=http://www.google.com
-VAR_ENABLE_WEBINTERFACE=false
-VAR_ENABLE_ALWAYS_SPEEDTEST=false
-VAR_WEB_PORT=9000
-VAR_CUSTOM_WEB_PORT=false
+
 
 COLOR_RED="\033[31m"
 COLOR_GREEN="\033[32m"
