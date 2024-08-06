@@ -46,7 +46,7 @@ PRINT_HELP() {
   echo "$VAR_SCRIPTNAME -c                Check connection ever (n) seconds. Default is 5"
   echo "$VAR_SCRIPTNAME -u            URL/Host to check, default is http://www.google.com"
   echo "$VAR_SCRIPTNAME -w                                  Enable the remote webinteface"
-  echo "$VAR_SCRIPTNAME -p                  Specify an optional port for the webinterface"  
+  echo "$VAR_SCRIPTNAME -p                  Specify an optional port for the webinterface"
   echo "$VAR_SCRIPTNAME -i                           Install netcheck as a system service"
   echo "$VAR_SCRIPTNAME -d path/script            Specify script to execute on disconnect"
   echo "$VAR_SCRIPTNAME -r path/script             Specify script to execute on reconnect"
@@ -147,7 +147,7 @@ START_WEBSERVER() {
   VAR_PYTHON_VERSION=$($VAR_PYTHON_EXEC -c 'import sys; print(sys.version_info[0])')
   case $VAR_PYTHON_VERSION in
     2)
-      (cd $VAR_SCRIPTLOC/log; $VAR_PYTHON_EXEC -m SimpleHTTPServer $1 &) &> /dev/null  
+      (cd $VAR_SCRIPTLOC/log; $VAR_PYTHON_EXEC -m SimpleHTTPServer $1 &) &> /dev/null
     ;;
     3)
       (cd $VAR_SCRIPTLOC/log; $VAR_PYTHON_EXEC -m http.server $1 &) &> /dev/null
@@ -176,29 +176,29 @@ SETUP_WEBSERVER() {
 }
 
 CHECK_FOR_SPEEDTEST() {
-  if [[ $VAR_SPEEDTEST_DISABLED = false ]]; then :
-    if [ -f "$VAR_SCRIPTLOC/speedtest-cli.py" ] || [ -f "$VAR_SCRIPTLOC/speedtest-cli" ]; then
-        echo -e "SpeedTest-CLI:    $COLOR_GREEN Installed $COLOR_RESET"
-        VAR_SPEEDTEST_READY=true
+  if [[ $VAR_SPEEDTEST_DISABLED = false ]]; then
+    if command -v speedtest &> /dev/null; then
+      echo -e "SpeedTest-CLI:    $COLOR_GREEN Installed $COLOR_RESET"
+      VAR_SPEEDTEST_READY=true
     else
-        echo -e "SpeedTest-CLI:    $COLOR_RED Not Installed $COLOR_RESET"
-        INSTALL_SPEEDTEST
-    fi
-    if [ -f "$VAR_SCRIPTLOC/speedtest-cli" ]; then
-      mv $VAR_SCRIPTLOC/speedtest-cli $VAR_SCRIPTLOC/speedtest-cli.py
+      echo -e "SpeedTest-CLI:    $COLOR_RED Not Installed $COLOR_RESET"
+      INSTALL_SPEEDTEST
     fi
   else
-      echo -e "SpeedTest-CLI:    $COLOR_RED Disabled $COLOR_RESET"
+    echo -e "SpeedTest-CLI:    $COLOR_RED Disabled $COLOR_RESET"
   fi
 }
+
 
 INSTALL_SPEEDTEST() {
   PRINT_INSTALL
   read -r response
   if [[ $response =~ ^([yY][eE][sS]|[yY])$ ]]; then
     PRINT_INSTALLING
-    wget -q -O "$VAR_SCRIPTLOC/speedtest-cli.py" https://raw.githubusercontent.com/sivel/speedtest-cli/master/speedtest.py
-    chmod +x "$VAR_SCRIPTLOC/speedtest-cli.py"
+    sudo apt-get install -y curl
+    curl -s https://packagecloud.io/install/repositories/ookla/speedtest-cli/script.deb.sh | sudo bash
+    sudo apt-get update
+    sudo apt-get install -y speedtest-cli
     PRINT_NL
     CHECK_FOR_SPEEDTEST
   else
@@ -206,8 +206,42 @@ INSTALL_SPEEDTEST() {
   fi
 }
 
+
 RUN_SPEEDTEST() {
-  $VAR_SCRIPTLOC/speedtest-cli.py --simple --secure | sed 's/^/                                                 /' | tee -a $VAR_LOGFILE
+  # $VAR_SCRIPTLOC/speedtest-cli.py --simple --secure | sed 's/^/                                                 /' | tee -a $VAR_LOGFILE
+  local attempts=10
+  local speedtest_output
+  local retry_delay=4  # Delay in seconds
+
+  echo "Starting speed test..."
+
+  # Loop to run speedtest multiple times or until download speed is obtained
+  while [[ $attempts -gt 0 ]]; do
+    speedtest_output="$(speedtest)"
+
+    # Check if speedtest output contains download speed
+    if grep -q "Mbps" <<< "$speedtest_output"; then
+      break
+    fi
+
+    ((attempts--))
+    sleep $retry_delay  # Add delay between retries
+  done
+
+  # If download speed was obtained, extract and log upload speed, download speed, and latency
+  if grep -q "Mbps" <<< "$speedtest_output"; then
+    upload=$(echo "$speedtest_output" | awk '/Upload:/ { print $2, $3 }')
+    download=$(echo "$speedtest_output" | awk '/Download:/ { print $2, $3 }')
+    latency=$(echo "$speedtest_output" | awk '/Idle Latency:/ { print $3, $4 }')
+    packet_loss=$(echo "$speedtest_output" | awk '/Packet Loss:/ { print $3 }')
+
+    echo "Upload: $upload" | tee -a "$VAR_LOGFILE"
+    echo "Download: $download" | tee -a "$VAR_LOGFILE"
+    echo "Latency: $latency" | tee -a "$VAR_LOGFILE"
+    echo "Packet Loss: $packet_loss" | tee -a "$VAR_LOGFILE"
+  else
+    echo "Failed to obtain download speed" | tee -a "$VAR_LOGFILE"
+  fi
 }
 
 NET_CHECK() {
@@ -260,7 +294,7 @@ INSTALL_AS_SERVICE() {
     echo "Netcheck can only be installed as a service on systems using systemctl."
     echo "You will need to manually setup Netcheck as a service on your system."
     exit
-  else 
+  else
     FILE=/etc/systemd/system/netcheck.service
     if [ -f "$FILE" ]; then
       echo "Netcheck already installed as a service."
@@ -269,17 +303,25 @@ INSTALL_AS_SERVICE() {
     else
       echo "You will need to authenticate using sudo to install."
       echo "Installing netcheck as a service..."
+
+      # Get current user and group
+      CURRENT_USER=$(id -u -n)
+      CURRENT_GROUP=$(id -g -n)
+
       sudo tee -a /etc/systemd/system/netcheck.service <<EOL >/dev/null
 [Unit]
 Description=Netcheck Service
 
 [Service]
+User=$CURRENT_USER
+Group=$CURRENT_GROUP
 WorkingDirectory=$VAR_SCRIPTLOC/
 ExecStart=$VAR_SCRIPTLOC/$VAR_SCRIPTNAME
 
 [Install]
 WantedBy=multi-user.target
 EOL
+
       sudo systemctl enable netcheck.service >/dev/null
       PRINT_MANAGESERVICE
       echo "Would you like to start netcheck as a service now?"
@@ -346,7 +388,7 @@ while getopts "f:d:r:t:c:u:p:whelp-sie" opt; do
     s)
       VAR_SPEEDTEST_DISABLED=true
       ;;
-    i) 
+    i)
       VAR_INSTALL_AS_SERVICE=true
       ;;
     e)
